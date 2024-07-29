@@ -24,6 +24,23 @@ func serve() error {
 
 	return http.ListenAndServe(":3000", nil) // nil means use the http.DefaultServeMux as the handler
 }
+func serveWithCustomRouter() error {
+	http.HandleFunc("/", customRouter)
+	fmt.Println("Listening on :3000 ...")
+
+	return http.ListenAndServe(":3000", nil) // nil means use the http.DefaultServeMux as the handler
+}
+
+func customRouter(res http.ResponseWriter, req *http.Request) {
+	path := req.URL.Path
+
+	switch path {
+	case "/":
+		rootRouteHandler(res, req)
+	case "/contact":
+		contactRouteHandler(res, req)
+	}
+}
 
 func main() {
 	defer func() {
@@ -31,7 +48,7 @@ func main() {
 		log.Println(err)
 	}()
 	// go serveServerMux()
-	if err := serve(); err != nil {
+	if err := serveWithCustomRouter(); err != nil {
 		panic(err)
 	}
 
