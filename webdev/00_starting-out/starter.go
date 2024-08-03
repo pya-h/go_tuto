@@ -30,7 +30,7 @@ type Router struct {
 	// and we can pass it to our route handlers.
 }
 
-func (Router) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+func (Router) ServeHTTP(res http.ResponseWriter, req *http.Request) { // implements the Handler interface
 	path := req.URL.Path
 
 	switch path {
