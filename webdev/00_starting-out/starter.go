@@ -24,14 +24,13 @@ func serve() error {
 
 	return http.ListenAndServe(":3000", nil) // nil means use the http.DefaultServeMux as the handler
 }
-func serveWithCustomRouter() error {
-	http.HandleFunc("/", customRouter)
-	fmt.Println("Listening on :3000 ...")
 
-	return http.ListenAndServe(":3000", nil) // nil means use the http.DefaultServeMux as the handler
+type Router struct {
+	// doing this will give us previllages like having usefule fields and data on our router, such as database connection,
+	// and we can pass it to our route handlers.
 }
 
-func customRouter(res http.ResponseWriter, req *http.Request) {
+func (Router) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	path := req.URL.Path
 
 	switch path {
@@ -39,7 +38,18 @@ func customRouter(res http.ResponseWriter, req *http.Request) {
 		rootRouteHandler(res, req)
 	case "/contact":
 		contactRouteHandler(res, req)
+	default:
+		// res.WriteHeader(http.StatusNotFound) // Note: When you directly Write() the response, Go assumes the status is 200
+		// fmt.Fprint(res, "Page Not Found.")
+		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound) // alternative
 	}
+}
+
+func serveWithCustomRouter() error {
+	var router Router
+	fmt.Println("Listening on :3000 ...")
+
+	return http.ListenAndServe(":3000", router) // nil means use the http.DefaultServeMux as the handler
 }
 
 func main() {
