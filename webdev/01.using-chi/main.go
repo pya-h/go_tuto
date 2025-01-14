@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -78,11 +80,22 @@ func sayHiTo(w http.ResponseWriter, r *http.Request) {
 	firstname := chi.URLParam(r, "fname")
 	lastname := chi.URLParam(r, "lname")
 
-	w.Write([]byte(fmt.Sprintf("Hi %s %s", firstname, lastname)))
+	ctx := r.Context()
+	at := ctx.Value("time").(time.Time)
+	w.Write([]byte(fmt.Sprintf("Hi %s %s @ %s", firstname, lastname, at.String())))
+}
+
+func addTimeMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), "time", time.Now()) // add field time to request context
+
+		next.ServeHTTP(w, r.WithContext(ctx)) // time is now available from this point forward
+	})
 }
 
 func main() {
 	router := chi.NewRouter()
+	router.Use(addTimeMiddleware)
 	router.Get("/", indexRouteHandler)
 	router.Get("/faq", faqRouteHandler)
 	router.Get("/say-hi/{fname}-{lname}", sayHiTo)
