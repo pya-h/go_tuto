@@ -74,11 +74,21 @@ func indexRouteHandler(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "index.html")
 }
 
+func sayHiTo(w http.ResponseWriter, r *http.Request) {
+	firstname := chi.URLParam(r, "fname")
+	lastname := chi.URLParam(r, "lname")
+
+	w.Write([]byte(fmt.Sprintf("Hi %s %s", firstname, lastname)))
+}
+
 func main() {
 	router := chi.NewRouter()
 	router.Get("/", indexRouteHandler)
 	router.Get("/faq", faqRouteHandler)
-
+	router.Get("/say-hi/{fname}-{lname}", sayHiTo)
+	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		renderTemplate(w, "404.html")
+	})
 	fmt.Println("Server listening @ 3000")
 	http.ListenAndServe(":3000", router)
 }
